@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = "fontana_client_support"
   spec.version       = FontanaClientSupport::VERSION
   spec.authors       = ["akima"]
-  spec.email         = ["akm2000@gmail.com"]
+  spec.email         = ["t-akima@groovenauts.jp"]
   spec.description   = %q{TODO: Write a gem description}
   spec.summary       = %q{TODO: Write a gem summary}
   spec.homepage      = ""
