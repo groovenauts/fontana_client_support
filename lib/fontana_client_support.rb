@@ -12,6 +12,16 @@ module FontanaClientSupport
     def vendor_fontana
       @vendor_fontana ||= File.join(vendor_dir, "fontana")
     end
+
+    def current_branch_name
+      @current_branch_name ||= `git log --decorate -1`.scan(/^commit\s[0-9a-f]+\s\((.+)\)/).
+        flatten.first.split(/,/).map(&:strip).select{|s| s =~ /origin\//}.
+        reject{|s| s == "origin/HEAD"}.first.sub(/\Aorigin\//, '')
+    end
+
+    def repo_url
+      @repo_url ||= `git remote -v`.scan(/origin\s+(.+?)\s/).flatten.uniq.first
+    end
   end
 end
 
