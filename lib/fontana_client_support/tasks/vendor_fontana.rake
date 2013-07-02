@@ -13,8 +13,8 @@ namespace :vendor do
     task :clone => :"vendor:fontana:clear" do
       raise "$FONTANA_REPO_URL is required" unless Fontana.repo_url
       FileUtils.mkdir_p(FontanaClientSupport.vendor_dir)
-      Dir.chdir(FontanaClientSupport.vendor_dir) do
-        system!("git clone #{Fontana.repo_url}")
+      Dir.chdir(FontanaClientSupport.root_dir) do
+        system!("git clone #{Fontana.repo_url} vendor/fontana")
       end
       Dir.chdir(FontanaClientSupport.vendor_fontana) do
         system!("git checkout #{Fontana.branch}")
