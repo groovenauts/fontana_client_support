@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = FontanaClientSupport::VERSION
   spec.authors       = ["akima"]
   spec.email         = ["t-akima@groovenauts.jp"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{gem to support development and testing with GSS/fontana}
+  spec.summary       = %q{gem to support development and testing with GSS/fontana}
   spec.homepage      = ""
   spec.license       = "MIT"
 
