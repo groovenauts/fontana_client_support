@@ -22,6 +22,16 @@ module FontanaClientSupport
     def repo_url
       @repo_url ||= `git remote -v`.scan(/origin\s+(.+?)\s/).flatten.uniq.first
     end
+
+    def deploy_strategy
+      @deploy_strategy ||= :deploy
+    end
+    attr_writer :deploy_strategy
+
+    def config
+      yield(self) if block_given?
+      self
+    end
   end
 end
 
