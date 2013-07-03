@@ -14,9 +14,19 @@ module FontanaClientSupport
     end
 
     def current_branch_name
-      @current_branch_name ||= `git log --decorate -1`.scan(/^commit\s[0-9a-f]+\s\((.+)\)/).
-        flatten.first.split(/,/).map(&:strip).select{|s| s =~ /origin\//}.
-        reject{|s| s == "origin/HEAD"}.first.sub(/\Aorigin\//, '')
+      unless @current_branch_name
+        work = `git log --decorate -1`.scan(/^commit\s[0-9a-f]+\s\((.+)\)/).
+          flatten.first.split(/,/).map(&:strip).reject{|s| s =~ /HEAD\Z/}
+        r = work.select{|s| s =~ /origin\//}.first
+        r ||= work.first
+        @current_branch_name = r.sub(/\Aorigin\//, '')
+      end
+      @current_branch_name
+    rescue => e
+      puts "[#{e.class}] #{e.message}"
+      puts "Dir.pwd: #{Dir.pwd}"
+      puts "git log --decorate -1\n" << `git log --decorate -1`
+      raise e
     end
 
     def repo_url
