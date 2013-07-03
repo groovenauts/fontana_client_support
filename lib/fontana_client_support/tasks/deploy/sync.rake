@@ -12,13 +12,13 @@ namespace :deploy do
     }
 
 
-    desc "sync:setup sync:update"
+    desc "deploy:sync:setup + deploy:sync:update"
     fontana_task :reset, before: runtime_source
 
-    desc "drop DB, initialize, clear runtime workspace. same as app:sync:setup"
+    desc "drop DB + initialize DB + clear runtime workspace. same as app:sync:setup"
     fontana_task :setup
 
-    desc "update app_seed:build_from_runtime and migrate. $RUNTIME_SOURCE is required."
+    desc "update runtime + app_seed:build_from_runtime + migrate."
     fontana_task :update, before: runtime_source
   end
 

@@ -12,7 +12,7 @@ namespace :deploy do
       ENV['BRANCH'] ||= FontanaClientSupport.current_branch_name
     }
 
-    desc "scm:setup, clone, checkout branch, scm:update. $URL required."
+    desc "deploy:scm:setup + clone (+ checkout branch) + deploy:scm:update."
     fontana_task :reset, before: set_url_and_branch
 
     desc "drop DB, initialize, clear runtime workspace."
