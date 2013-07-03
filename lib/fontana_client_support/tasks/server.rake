@@ -2,20 +2,13 @@ require 'fontana_client_support'
 include Fontana::ServerRake
 
 namespace_with_fontana :server, :libgss_test do
-  desc "luanch HTTP server"
   fontana_task :launch_http_server
 
-  desc "luanch HTTP server daemon"
   fontana_task :launch_http_server_daemon
 
-  desc "luanch HTTPS server"
   fontana_task :launch_https_server
 
-  desc "luanch HTTPS server daemon"
   fontana_task :launch_https_server_daemon
-
-  desc "luanch server"
-  fontana_task :launch_server
 
   desc "luanch server daemons"
   fontana_task :launch_server_daemons

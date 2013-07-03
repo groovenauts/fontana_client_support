@@ -4,12 +4,10 @@ include Fontana::ServerRake
 namespace :vendor do
   namespace :fontana do
 
-    desc "clear"
     task :clear do
       FileUtils.rm_rf(FontanaClientSupport.vendor_fontana)
     end
 
-    desc "clone"
     task :clone => :"vendor:fontana:clear" do
       raise "$FONTANA_REPO_URL is required" unless Fontana.repo_url
       FileUtils.mkdir_p(FontanaClientSupport.vendor_dir)
@@ -25,7 +23,6 @@ namespace :vendor do
       Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:reset"].execute
     end
 
-    desc "update"
     task :update do
       Dir.chdir(FontanaClientSupport.vendor_fontana) do
         system!("git fetch origin")
@@ -36,7 +33,6 @@ namespace :vendor do
       Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:update"].execute
     end
 
-    desc "prepare"
     task :prepare do
       if Dir.exist?(FontanaClientSupport.vendor_fontana)
         Rake::Task["vendor:fontana:update"].execute

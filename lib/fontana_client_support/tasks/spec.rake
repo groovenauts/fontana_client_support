@@ -2,7 +2,7 @@
 require 'fontana_client_support'
 include Fontana::ServerRake
 
-desc "run spec with server_daemons"
+desc "Run RSpec with server_daemons"
 task :spec_with_server_daemons => [:"vendor:fontana:prepare"] do
   Rake::Task["server:launch_server_daemons"].execute
   begin
