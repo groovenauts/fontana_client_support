@@ -11,11 +11,11 @@ namespace_with_fontana :sync, :"app:sync" do
 
 
   desc "sync:setup sync:update"
-  fontana_task :reset, before: set_url_and_branch
+  fontana_task :reset, before: runtime_source
 
   desc "drop DB, initialize, clear runtime workspace. same as app:sync:setup"
   fontana_task :setup
 
   desc "update app_seed:build_from_runtime and migrate. $RUNTIME_SOURCE is required."
-  fontana_task :update, before: set_url_and_branch
+  fontana_task :update, before: runtime_source
 end
