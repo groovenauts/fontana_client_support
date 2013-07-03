@@ -2,6 +2,8 @@
 require 'fontana_client_support'
 include Fontana::ServerRake
 
+namespace :deploy do
+
 # このタスク群は scm:* と対になっています。
 namespace_with_fontana :sync, :"app:sync" do
 
@@ -18,4 +20,6 @@ namespace_with_fontana :sync, :"app:sync" do
 
   desc "update app_seed:build_from_runtime and migrate. $RUNTIME_SOURCE is required."
   fontana_task :update, before: runtime_source
+end
+
 end

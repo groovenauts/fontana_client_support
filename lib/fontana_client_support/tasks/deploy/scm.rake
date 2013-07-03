@@ -2,6 +2,8 @@
 require 'fontana_client_support'
 include Fontana::ServerRake
 
+namespace :deploy do
+
 # このタスク群は sync:* と対になっています。
 namespace_with_fontana :scm, :"app:scm" do
 
@@ -18,4 +20,6 @@ namespace_with_fontana :scm, :"app:scm" do
 
   desc "fetch, checkout, build app_seed and migrate."
   fontana_task :update
+end
+
 end

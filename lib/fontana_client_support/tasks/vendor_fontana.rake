@@ -22,7 +22,7 @@ namespace :vendor do
         FileUtils.cp("config/project.yml.erb.example", "config/project.yml.erb")
         system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle install")
       end
-      Rake::Task["#{FontanaClientSupport.deploy_strategy}:reset"].execute
+      Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:reset"].execute
     end
 
     desc "update"
@@ -33,7 +33,7 @@ namespace :vendor do
         system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle install")
         system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle exec rake db:drop")
       end
-      Rake::Task["#{FontanaClientSupport.deploy_strategy}:update"].execute
+      Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:update"].execute
     end
 
     desc "prepare"
