@@ -1,6 +1,11 @@
 # FontanaClientSupport
 
-TODO: Write a gem description
+FontanaのAppSeedファイルやストアドスクリプトを開発するためのgemです。
+サーバの起動、テストの実行をサポートする機能を提供します。
+
+具体的な使い方は
+https://github.com/groovenauts/fontana_sample/tree/develop
+を参照してください
 
 ## Installation
 
