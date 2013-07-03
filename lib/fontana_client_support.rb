@@ -46,7 +46,7 @@ module FontanaClientSupport
       @deploy_strategy = v
     end
 
-    def config
+    def configure
       yield(self) if block_given?
       self
     end
