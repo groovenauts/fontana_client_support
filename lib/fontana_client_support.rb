@@ -26,7 +26,15 @@ module FontanaClientSupport
     def deploy_strategy
       @deploy_strategy ||= :deploy
     end
-    attr_writer :deploy_strategy
+
+    DEPLOY_STRATEGY_NAMES = [:scm, :sync].freeze
+
+    def deploy_strategy=(v)
+      unless DEPLOY_STRATEGY_NAMES.include?(v)
+        raise ArgumentError, "invalid deploy_strategy: #{v.inspect} must be one of #{DEPLOY_STRATEGY_NAMES.inspect}"
+      end
+      @deploy_strategy = v
+    end
 
     def config
       yield(self) if block_given?
