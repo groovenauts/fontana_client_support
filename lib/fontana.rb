@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 module Fontana
   autoload :CommandUtils, 'fontana/command_utils'
@@ -16,6 +17,12 @@ module Fontana
 
     def home=(value)
       @home = value
+    end
+
+    # これは fontanaの Fontana.env と同じ動きをすることが期待されています。
+    # https://github.com/tengine/fontana/blob/master/config/application.rb#L24
+    def env
+      @env ||= (ENV["FONTANA_ENV"] || "DEVELOPMENT").to_sym
     end
 
   end
