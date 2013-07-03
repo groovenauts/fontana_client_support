@@ -40,8 +40,9 @@ namespace :vendor do
         Rake::Task["vendor:fontana:clone"].execute
       end
     end
+
+    desc "reset vendor/fontana"
+    task :resrt => [:"vendor:fontana:clear", :"vendor:fontana:clone"]
   end
 
-  desc "prepare vendor/fontana "
-  task :fontana => :"vendor:fontana:prepare"
 end
