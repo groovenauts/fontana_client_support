@@ -42,7 +42,7 @@ namespace :vendor do
     end
 
     desc "reset vendor/fontana"
-    task :resrt => [:"vendor:fontana:clear", :"vendor:fontana:clone"]
+    task :reset => [:"vendor:fontana:clear", :"vendor:fontana:clone"]
   end
 
 end
