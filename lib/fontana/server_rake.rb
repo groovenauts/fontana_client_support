@@ -1,3 +1,5 @@
+require 'fontana'
+
 module Fontana
   module ServerRake
 

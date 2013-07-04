@@ -3,6 +3,7 @@
 module Fontana
   autoload :CommandUtils, 'fontana/command_utils'
   autoload :ServerRake  , 'fontana/server_rake'
+  autoload :RakeUtils   , 'fontana/rake_utils'
 
   class << self
     # attr_accessor :home
