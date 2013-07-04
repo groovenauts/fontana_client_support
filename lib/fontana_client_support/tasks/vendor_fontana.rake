@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'fontana_client_support'
 include Fontana::ServerRake
 include Fontana::RakeUtils
@@ -10,7 +11,22 @@ namespace :vendor do
       FileUtils.rm_rf(d) if Dir.exist?(d)
     end
 
-    task :setup do
+    # 動的に決まるタスクを静的に扱えるようにタスクを定義します
+    task :deploy_reset do
+      Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:reset"].delegate
+    end
+    task :deploy_update do
+      Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:update"].delegate
+    end
+
+    task_sequential :setup, [
+      :"vendor:fontana:clone",
+      :"vendor:fontana:configs",
+      :"vendor:fontana:bundle_install",
+      :"vendor:fontana:deploy_reset",
+    ]
+
+    task :clone do
       raise "$FONTANA_REPO_URL is required" unless Fontana.repo_url
       FileUtils.mkdir_p(FontanaClientSupport.vendor_dir)
       Dir.chdir(FontanaClientSupport.root_dir) do
@@ -18,21 +34,40 @@ namespace :vendor do
       end
       Dir.chdir(FontanaClientSupport.vendor_fontana) do
         system!("git checkout #{Fontana.branch}")
-        FileUtils.cp(File.join(FontanaClientSupport.root_dir, "spec/server_config/mongoid.yml"), "config/mongoid.yml")
-        FileUtils.cp("config/project.yml.erb.example", "config/project.yml.erb")
-        system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle install")
       end
-      Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:reset"].delegate
     end
 
-    task :update do
+    task :configs do
+      Dir.chdir(FontanaClientSupport.vendor_fontana) do
+        FileUtils.cp(File.join(FontanaClientSupport.root_dir, "spec/server_config/mongoid.yml"), "config/mongoid.yml")
+        FileUtils.cp("config/project.yml.erb.example", "config/project.yml.erb")
+      end
+    end
+
+    task :bundle_install do
+      Dir.chdir(FontanaClientSupport.vendor_fontana) do
+        system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle install")
+      end
+    end
+
+    task_sequential :update, [
+      :"vendor:fontana:fetch_and_checkout",
+      :"vendor:fontana:bundle_install",
+      :"vendor:fontana:db_drop",
+      :"vendor:fontana:deploy_update",
+    ]
+
+    task :fetch_and_checkout do
       Dir.chdir(FontanaClientSupport.vendor_fontana) do
         system!("git fetch origin")
         system!("git checkout origin/#{Fontana.branch}")
-        system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle install")
+      end
+    end
+
+    task :db_drop do
+      Dir.chdir(FontanaClientSupport.vendor_fontana) do
         system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle exec rake db:drop")
       end
-      Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:update"].delegate
     end
 
     desc "reset vendor/fontana"
