@@ -39,7 +39,15 @@ namespace :vendor do
 
     task :configs do
       Dir.chdir(FontanaClientSupport.vendor_fontana) do
-        FileUtils.cp(File.join(FontanaClientSupport.root_dir, "spec/server_config/mongoid.yml"), "config/mongoid.yml")
+        [
+          File.join(FontanaClientSupport.root_dir, "config/fontana_mongoid.yml"),
+          "config/project.yml.erb.example"
+        ].each do |path|
+          if File.readable?(path)
+            FileUtils.cp(path, "config/mongoid.yml")
+            break
+          end
+        end
         FileUtils.cp("config/project.yml.erb.example", "config/project.yml.erb")
       end
     end
