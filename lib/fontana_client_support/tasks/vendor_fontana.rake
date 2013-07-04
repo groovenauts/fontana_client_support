@@ -1,14 +1,16 @@
 require 'fontana_client_support'
 include Fontana::ServerRake
+include Fontana::RakeUtils
 
 namespace :vendor do
   namespace :fontana do
 
     task :clear do
-      FileUtils.rm_rf(FontanaClientSupport.vendor_fontana)
+      d = FontanaClientSupport.vendor_fontana
+      FileUtils.rm_rf(d) if Dir.exist?(d)
     end
 
-    task :clone => :"vendor:fontana:clear" do
+    task :setup do
       raise "$FONTANA_REPO_URL is required" unless Fontana.repo_url
       FileUtils.mkdir_p(FontanaClientSupport.vendor_dir)
       Dir.chdir(FontanaClientSupport.root_dir) do
@@ -20,7 +22,7 @@ namespace :vendor do
         FileUtils.cp("config/project.yml.erb.example", "config/project.yml.erb")
         system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle install")
       end
-      Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:reset"].execute
+      Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:reset"].delegate
     end
 
     task :update do
@@ -30,19 +32,16 @@ namespace :vendor do
         system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle install")
         system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle exec rake db:drop")
       end
-      Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:update"].execute
-    end
-
-    task :prepare do
-      if Dir.exist?(FontanaClientSupport.vendor_fontana)
-        Rake::Task["vendor:fontana:update"].execute
-      else
-        Rake::Task["vendor:fontana:clone"].execute
-      end
+      Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:update"].delegate
     end
 
     desc "reset vendor/fontana"
-    task :reset => [:"vendor:fontana:clear", :"vendor:fontana:clone"]
+    task_sequential :reset, [:"vendor:fontana:clear", :"vendor:fontana:setup"]
+
+    task :prepare do
+      name = Dir.exist?(FontanaClientSupport.vendor_fontana) ? "update" : "reset"
+      Rake::Task["vendor:fontana:#{name}"].delegate
+    end
   end
 
 end
