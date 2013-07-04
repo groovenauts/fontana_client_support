@@ -3,11 +3,18 @@ require 'fontana'
 module Fontana
   module RakeUtils
 
-    module_function
-
-    def call(task_name)
-      task = Rake::Task[task_name]
-      pp task.prerequisites
+    class << self
+      def enable_task_delegate
+        Rake::Task.send(:include, Fontana::RakeUtils::Delegatable)
+      end
     end
+
+    module Delegatable
+      def delegate
+        self.prerequisite_tasks.each(&:delegate)
+        execute
+      end
+    end
+
   end
 end
