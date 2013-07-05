@@ -41,7 +41,7 @@ namespace :vendor do
       Dir.chdir(FontanaClientSupport.vendor_fontana) do
         [
           File.join(FontanaClientSupport.root_dir, "config/fontana_mongoid.yml"),
-          "config/project.yml.erb.example"
+          "config/mongoid.yml.example"
         ].each do |path|
           if File.readable?(path)
             FileUtils.cp(path, "config/mongoid.yml")
