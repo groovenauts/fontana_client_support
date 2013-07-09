@@ -1,4 +1,5 @@
 require 'fontana'
+require 'fileutils'
 
 module Fontana
   module ServerRake
@@ -19,7 +20,7 @@ module Fontana
       if Rake.application.options.trace
         cmd << " --trace -v"
       end
-      Dir.chdir(Fontana.home) do
+      FileUtils::Verbose.chdir(Fontana.home) do
         system!(cmd)
       end
 

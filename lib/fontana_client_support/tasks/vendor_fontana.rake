@@ -3,12 +3,16 @@ require 'fontana_client_support'
 include Fontana::ServerRake
 include Fontana::RakeUtils
 
+require 'fileutils'
+
 namespace :vendor do
   namespace :fontana do
 
+    fileutils = FileUtils::Verbose
+
     task :clear do
       d = FontanaClientSupport.vendor_fontana
-      FileUtils.rm_rf(d) if Dir.exist?(d)
+      fileutils.rm_rf(d) if Dir.exist?(d)
     end
 
     # 動的に決まるタスクを静的に扱えるようにタスクを定義します
@@ -28,32 +32,32 @@ namespace :vendor do
 
     task :clone do
       raise "$FONTANA_REPO_URL is required" unless Fontana.repo_url
-      FileUtils.mkdir_p(FontanaClientSupport.vendor_dir)
-      Dir.chdir(FontanaClientSupport.root_dir) do
+      fileutils.mkdir_p(FontanaClientSupport.vendor_dir)
+      fileutils.chdir(FontanaClientSupport.root_dir) do
         system!("git clone #{Fontana.repo_url} vendor/fontana")
       end
-      Dir.chdir(FontanaClientSupport.vendor_fontana) do
+      fileutils.chdir(FontanaClientSupport.vendor_fontana) do
         system!("git checkout #{Fontana.branch}")
       end
     end
 
     task :configs do
-      Dir.chdir(FontanaClientSupport.vendor_fontana) do
+      fileutils.chdir(FontanaClientSupport.vendor_fontana) do
         [
           File.join(FontanaClientSupport.root_dir, "config/fontana_mongoid.yml"),
           "config/mongoid.yml.example"
         ].each do |path|
           if File.readable?(path)
-            FileUtils.cp(path, "config/mongoid.yml")
+            fileutils.cp(path, "config/mongoid.yml")
             break
           end
         end
-        FileUtils.cp("config/project.yml.erb.example", "config/project.yml.erb")
+        fileutils.cp("config/project.yml.erb.example", "config/project.yml.erb")
       end
     end
 
     task :bundle_install do
-      Dir.chdir(FontanaClientSupport.vendor_fontana) do
+      fileutils.chdir(FontanaClientSupport.vendor_fontana) do
         system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle install")
       end
     end
@@ -66,14 +70,14 @@ namespace :vendor do
     ]
 
     task :fetch_and_checkout do
-      Dir.chdir(FontanaClientSupport.vendor_fontana) do
+      fileutils.chdir(FontanaClientSupport.vendor_fontana) do
         system!("git fetch origin")
         system!("git checkout origin/#{Fontana.branch}")
       end
     end
 
     task :db_drop do
-      Dir.chdir(FontanaClientSupport.vendor_fontana) do
+      fileutils.chdir(FontanaClientSupport.vendor_fontana) do
         system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle exec rake db:drop")
       end
     end
