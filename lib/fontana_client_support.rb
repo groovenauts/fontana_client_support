@@ -15,7 +15,7 @@ module FontanaClientSupport
 
     def current_branch_name
       unless @current_branch_name
-        work = `git log --decorate -1`.scan(/^commit\s[0-9a-f]+\s\((.+)\)/).
+        work = `git log --decorate -1 --branches`.scan(/^commit\s[0-9a-f]+\s\((.+)\)/).
           flatten.first.split(/,/).map(&:strip).reject{|s| s =~ /HEAD\Z/}
         r = work.select{|s| s =~ /origin\//}.first
         r ||= work.first
