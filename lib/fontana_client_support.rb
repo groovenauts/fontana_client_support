@@ -2,6 +2,8 @@ require "fontana_client_support/version"
 
 module FontanaClientSupport
 
+  autoload :ConfigServer, "fontana_client_support/config_server"
+
   class << self
     attr_accessor :root_dir
 
