@@ -1,5 +1,8 @@
 require 'fileutils'
 
+require 'fontana_client_support'
+extend Fontana::RakeUtils
+
 namespace :config_server do
 
   desc "launch server process in foreground mode"
@@ -17,4 +20,6 @@ namespace :config_server do
     FontanaClientSupport::ConfigServer.stop_daemon
   end
 
+  desc "stop and start server daemon"
+  task_sequential(:restart, [:"config_server:stop", :"config_server:start"])
 end

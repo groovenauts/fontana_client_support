@@ -7,8 +7,8 @@ module FontanaClientSupport
     def initialize(config = {})
       @config = {
         :DocumentRoot => File.join(FontanaClientSupport.root_dir, "config_server"),
-        :BindAddress => '127.0.0.1',
-        :Port => 80
+        :BindAddress => ENV['GSS_CONFIG_SERVER_ADDRESS'] || '127.0.0.1',
+        :Port => (ENV['GSS_CONFIG_SERVER_PORT'] || 80).to_i
       }
       @config.update(config)
     end
@@ -51,7 +51,6 @@ module FontanaClientSupport
           Process.kill("INT", pid.to_i)
         end
       end
-
     end
 
   end

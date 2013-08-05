@@ -1,6 +1,8 @@
 require 'fontana_client_support'
 include Fontana::ServerRake
 
+extend Fontana::RakeUtils
+
 namespace_with_fontana :server, :libgss_test do
 
   fontana_task :launch_http_server
@@ -21,5 +23,5 @@ namespace :servers do
   task :stop => :"server:shutdown_server_daemons"
 
   desc "restart HTTP+HTTPS server daemons"
-  task :restart => [:"servers:stop", :"servers:start"]
+  task_sequential(:restart, [:"servers:stop", :"servers:start"])
 end
