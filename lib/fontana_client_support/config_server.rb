@@ -35,12 +35,15 @@ module FontanaClientSupport
           open(pid_file, "w") do |f|
             f.write(Process.pid)
           end
+          $stdout.reopen("/dev/null")
+          $stderr.reopen("/dev/null")
           begin
             self.new(options).launch
           ensure
             File.delete(pid_file)
           end
         end
+        puts "#{Process.pid} launches child process by #{name}.start_daemon returns #{pid}"
         pid
       end
 
