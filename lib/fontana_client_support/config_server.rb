@@ -43,7 +43,7 @@ module FontanaClientSupport
             File.delete(pid_file)
           end
         end
-        puts "#{Process.pid} launches child process by #{name}.start_daemon returns #{pid}"
+        # puts "#{Process.pid} launches child process by #{name}.start_daemon returns #{pid}"
         pid
       end
 
