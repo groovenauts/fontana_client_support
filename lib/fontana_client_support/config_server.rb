@@ -1,24 +1,52 @@
 require 'fontana_client_support'
+require 'tmpdir'
+require 'fileutils'
 
 module FontanaClientSupport
   class ConfigServer
 
     # see http://doc.ruby-lang.org/ja/1.9.3/class/WEBrick=3a=3aHTTPServer.html
     def initialize(config = {})
-      @config = {
-        :DocumentRoot => File.join(FontanaClientSupport.root_dir, "config_server"),
-        :BindAddress => ENV['GSS_CONFIG_SERVER_ADDRESS'] || '127.0.0.1',
-        :Port => (ENV['GSS_CONFIG_SERVER_PORT'] || 80).to_i
-      }
-      @config.update(config)
+      @config = config
     end
 
     def launch
       require 'webrick'
-      server = WEBrick::HTTPServer.new(@config)
-      puts "config_server options: #{@config.inspect}"
-      Signal.trap(:INT){ server.shutdown }
-      server.start
+      root_dir = FontanaClientSupport.root_dir
+      document_root_source = @config[:document_root] || root_dir ? File.join(root_dir, "config_server") : "."
+      Dir.mktmpdir("fontana_config_server") do |dir|
+        if @config[:document_root] or root_dir.nil?
+          document_root = document_root_source
+        else
+          git_dir       = File.join(dir, "workspace")
+          document_root = File.join(dir, "document_root")
+          FileUtils.cp_r(document_root_source, document_root)
+        end
+
+        server_config = {
+          :DocumentRoot => document_root,
+          :BindAddress => @config[:address] || ENV['GSS_CONFIG_SERVER_ADDRESS'] || '127.0.0.1',
+          :Port => (@config[:port] || ENV['GSS_CONFIG_SERVER_PORT'] || 80).to_i
+        }
+        server = WEBrick::HTTPServer.new(server_config)
+        if FontanaClientSupport.root_dir
+          server.mount_proc('/switch_config_server') do |req, res|
+            unless Dir.exist?(git_dir)
+              FileUtils.cp_r(root_dir, git_dir)
+            end
+            tag = req.path.sub(%r{\A/switch_config_server/}, '')
+            Dir.chdir(git_dir) do
+              system("git reset --hard #{tag}")
+              FileUtils.rm_rf(document_root)
+              FileUtils.cp_r(File.join(git_dir, "config_server"), document_root)
+            end
+            res.body = Dir["#{document_root}/**/*"].to_a.join("\n  ")
+          end
+        end
+        puts "config_server options: #{@config.inspect}"
+        Signal.trap(:INT){ server.shutdown }
+        server.start
+      end
     end
 
     class << self

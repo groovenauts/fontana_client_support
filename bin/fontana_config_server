@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH << File.expand_path("../../lib", __FILE__)
+
+require 'optparse'
+
+default_options = {
+  "port" => 3002,
+}
+banner = "%s [options]" % File.basename(__FILE__)
+parser = OptionParser.new(banner) do |opt|
+  opt.on '-p', '--port PORT'
+  opt.on '-a', "--address BINDING_ADDRESS"
+  opt.on '-d', '--document-root DOCUMENT_ROOT_PATH'
+end
+
+options = default_options.merge(parser.getopts(ARGV))
+options = options.each_with_object({}){|(k,v), d| d[k.gsub(/-/, '_').to_sym] = v}
+
+require 'fontana_client_support'
+FontanaClientSupport::ConfigServer.new(options).launch
