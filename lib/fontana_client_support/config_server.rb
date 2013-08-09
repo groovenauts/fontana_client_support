@@ -14,6 +14,7 @@ module FontanaClientSupport
       require 'webrick'
       root_dir = FontanaClientSupport.root_dir
       document_root_source = @config[:document_root] || root_dir ? File.join(root_dir, "config_server") : "."
+      $stdout.puts("document_root_source: #{document_root_source.inspect}")
       Dir.mktmpdir("fontana_config_server") do |dir|
         if @config[:document_root] or root_dir.nil?
           document_root = document_root_source
@@ -35,12 +36,21 @@ module FontanaClientSupport
               FileUtils.cp_r(root_dir, git_dir)
             end
             tag = req.path.sub(%r{\A/switch_config_server/}, '')
-            Dir.chdir(git_dir) do
-              system("git reset --hard #{tag}")
-              FileUtils.rm_rf(document_root)
-              FileUtils.cp_r(File.join(git_dir, "config_server"), document_root)
+            msg = nil
+            if tag.nil? || tag.empty?
+              msg = "no tag or SHA1 given"
+            else
+              Dir.chdir(git_dir) do
+                if system("git reset --hard #{tag}")
+                  FileUtils.rm_rf(document_root)
+                  FileUtils.cp_r(File.join(git_dir, "config_server"), document_root)
+                  msg = "SUCCESS"
+                else
+                  msg = "ERROR"
+                end
+              end
             end
-            res.body = Dir["#{document_root}/**/*"].to_a.join("\n  ")
+            res.body = "#{msg}\n" + Dir["#{document_root}/**/*"].to_a.join("\n  ")
           end
         end
         puts "config_server options: #{@config.inspect}"
