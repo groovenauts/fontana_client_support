@@ -25,7 +25,7 @@ module FontanaClientSupport
 
         server_config = {
           :DocumentRoot => document_root,
-          :BindAddress => @config[:address] || ENV['GSS_CONFIG_SERVER_ADDRESS'] || '127.0.0.1',
+          :BindAddress => @config[:address] || ENV['GSS_CONFIG_SERVER_ADDRESS'],
           :Port => (@config[:port] || ENV['GSS_CONFIG_SERVER_PORT'] || 80).to_i
         }
         server = WEBrick::HTTPServer.new(server_config)
