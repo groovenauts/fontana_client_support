@@ -14,15 +14,20 @@ module FontanaClientSupport
       require 'webrick'
       root_dir = FontanaClientSupport.root_dir
       document_root_source = @config[:document_root] || root_dir ? File.join(root_dir, "config_server") : "."
-      $stdout.puts("document_root_source: #{document_root_source.inspect}")
+      $stdout.puts "config_server options: #{@config.inspect}"
+      $stdout.puts("root_dir             : #{root_dir.inspect}")
+      $stdout.puts("document_root_source : #{document_root_source.inspect}")
       Dir.mktmpdir("fontana_config_server") do |dir|
         if @config[:document_root] or root_dir.nil?
           document_root = document_root_source
         else
-          git_dir       = File.join(dir, "workspace")
+          git_dir = File.join(dir, "workspace")
           document_root = File.join(dir, "document_root")
           FileUtils.cp_r(document_root_source, document_root)
         end
+
+        $stdout.puts("document_root        : #{document_root.inspect}")
+        $stdout.puts("git_dir              : #{git_dir.inspect}")
 
         server_config = {
           :DocumentRoot => document_root,
@@ -32,28 +37,39 @@ module FontanaClientSupport
         server = WEBrick::HTTPServer.new(server_config)
         if FontanaClientSupport.root_dir
           server.mount_proc('/switch_config_server') do |req, res|
+            buf = []
             unless Dir.exist?(git_dir)
-              FileUtils.cp_r(root_dir, git_dir)
+              if git_repo_url = @config[:git_repo_url] || ENV['GSS_CONFIG_SERVER_REPO_URL']
+                Dir.chdir(dir) do
+                  cmd = "git clone #{git_repo_url} #{File.basename(git_dir)}"
+                  if system(cmd)
+                    buf << "SUCCESS: #{cmd}"
+                  else
+                    buf << "ERROR: #{cmd}"
+                  end
+                end
+              else
+                FileUtils.cp_r(root_dir, git_dir)
+                buf << "SUCCESS: cp -r #{root_dir} #{git_dir}"
+              end
             end
             tag = req.path.sub(%r{\A/switch_config_server/}, '')
-            msg = nil
             if tag.nil? || tag.empty?
-              msg = "no tag or SHA1 given"
+              bug << "no tag or SHA1 given"
             else
               Dir.chdir(git_dir) do
                 if system("git reset --hard #{tag}")
                   FileUtils.rm_rf(document_root)
                   FileUtils.cp_r(File.join(git_dir, "config_server"), document_root)
-                  msg = "SUCCESS"
+                  buf << "SUCCESS"
                 else
-                  msg = "ERROR"
+                  buf << "ERROR if you use in submodule, set $GSS_CONFIG_SERVER_REPO_URL.\nlike this:\n$ rake config_server:launch GSS_CONFIG_SERVER_PORT=3002 GSS_CONFIG_SERVER_REPO_URL=git@github.com:groovenauts/fontana_sample.git"
                 end
               end
             end
-            res.body = "#{msg}\n" + Dir["#{document_root}/**/*"].to_a.join("\n  ")
+            res.body = (buf + ["", "files: "] + Dir["#{document_root}/**/*"].to_a).join("\n  ")
           end
         end
-        puts "config_server options: #{@config.inspect}"
         Signal.trap(:INT){ server.shutdown }
         server.start
       end
