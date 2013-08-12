@@ -53,6 +53,7 @@ module FontanaClientSupport
       self
     end
   end
+
 end
 
 require 'fontana'

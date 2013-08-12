@@ -4,6 +4,9 @@ module Fontana
   autoload :CommandUtils, 'fontana/command_utils'
   autoload :ServerRake  , 'fontana/server_rake'
   autoload :RakeUtils   , 'fontana/rake_utils'
+  autoload :Fixture     , 'fontana/fixture'
+
+  extend Fontana::Fixture
 
   class << self
     # attr_accessor :home

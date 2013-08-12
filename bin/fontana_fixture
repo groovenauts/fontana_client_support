@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH << File.expand_path("../../lib", __FILE__)
+
+require 'optparse'
+
+default_options = {
+  "host" => "localhost",
+  "port" => 3000,
+}
+
+banner = "%s <fixture_name> [options]" % File.basename(__FILE__)
+parser = OptionParser.new(banner) do |opt|
+  opt.on '-h', '--host HOST'
+  opt.on '-p', '--port PORT'
+  opt.on '-a', "--address BINDING_ADDRESS"
+  opt.on '-d', '--document-root DOCUMENT_ROOT_PATH'
+end
+
+fixture_name = ARGV.shift
+
+options = default_options.merge(parser.getopts(ARGV))
+options = options.each_with_object({}){|(k,v), d| d[k.gsub(/-/, '_').to_sym] = v}
+
+require 'fontana'
+Fontana.load_fixture(fixture_name, options)
