@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 require 'fontana_client_support'
 
+require 'timeout'
+
 include Fontana::CommandUtils
 extend Fontana::RakeUtils
-
-
-
 
 
 namespace :server do
@@ -60,6 +59,42 @@ end
       task(:spawn_https_server){ spawn_at_vendor_fontana(https_env, https_base_cmd) }
 
       task :spawn_servers => [:spawn_http_server, :spawn_https_server]
+
+
+      {
+        http: config[:http_port],
+        https: config[:https_port],
+      }.each do |name, port|
+
+        task(:"error_on_#{name}_listened") do
+          lsof = `lsof -i:#{port}`
+          if lsof =~ /LISTEN/
+            raise "\e[31mAnother server is already running on #{port}. Stop it in order to run new server.\n#{lsof}\e[0m"
+          end
+        end
+
+        task(:"wait_to_listen_#{name}") do
+          timeout((ENV["WAIT_TO_LISTEN"] || 120).to_i) do
+            while true
+              break if `lsof -i:#{port}` =~ /LISTEN/
+              sleep(0.2)
+            end
+          end
+        end
+      end
+
+      desc "error on ports listened by some server"
+      task :error_on_ports_listened => [
+        :error_on_http_listened,
+        :error_on_https_listened,
+      ]
+
+      desc "wait to listen ports"
+      task :wait_to_listen_ports => [
+        :wait_to_listen_http,
+        :wait_to_listen_https,
+      ]
+
     end
 
     namespace :servers do
