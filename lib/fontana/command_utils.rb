@@ -7,8 +7,8 @@ module Fontana
 
     module_function
 
-    def system_at_root!(cmd, env = {}, &block)
-      FileUtils::Verbose.chdir(FontanaClientSupport.root_dir) do
+    def system_at_vendor_fontana!(cmd, env = {}, &block)
+      FileUtils::Verbose.chdir(FontanaClientSupport.vendor_fontana) do
         return system!(cmd, env, &block)
       end
     end
