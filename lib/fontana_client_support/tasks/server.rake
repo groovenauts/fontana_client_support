@@ -6,13 +6,6 @@ require 'timeout'
 include Fontana::CommandUtils
 extend Fontana::RakeUtils
 
-
-namespace :server do
-  task :wait_to_launch do
-    sleep( (ENV["FONTANA_WAIT_TO_LAUNCH"] || 20).to_i ) # 実際にポートをLINSTENするまで待ちたい
-  end
-end
-
 def build_env_str(env)
   env.each_with_object([]){|(k,v), d|
     d << "#{k.to_s}=#{v.to_s}"
