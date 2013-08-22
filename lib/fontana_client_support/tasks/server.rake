@@ -16,17 +16,17 @@ extend Fontana::RakeUtils
       common_cmd = "BUNDLE_GEMFILE=Gemfile-LibgssTest bundle exec"
 
       # desc "luanch HTTP server"
-      task( :launch_http_server       ){ system_at_root!("#{common_cmd} rails server -p #{config[:http_port]}") }
+      task( :launch_http_server       ){ system_at_root!("#{common_cmd} rails server -p #{config[:http_port]}", "FONTANA_APP_MODE" => app_mode) }
 
       # desc "luanch HTTP server daemon"
-      task(:launch_http_server_daemon ){ system_at_root!("#{common_cmd} rails server -p #{config[:http_port]} -d -P #{pid_dir}/#{app_mode}_http_server.pid") }
+      task(:launch_http_server_daemon ){ system_at_root!("#{common_cmd} rails server -p #{config[:http_port]} -d -P #{pid_dir}/#{app_mode}_http_server.pid", "FONTANA_APP_MODE" => app_mode) }
 
       # HTTPSのポートは script/secure_rails の内部で ENV['HTTPS_PORT'] を参照しています
       # desc "luanch HTTPS server"
-      task(:launch_https_server       ){ system_at_root!("#{common_cmd} script/secure_rails server webrick", 'HTTPS_PORT' => config[:https_port] ) }
+      task(:launch_https_server       ){ system_at_root!("#{common_cmd} script/secure_rails server webrick", 'HTTPS_PORT' => config[:https_port], "FONTANA_APP_MODE" => app_mode ) }
 
       # desc "luanch HTTPS server daemon"
-      task(:launch_https_server_daemon){ system_at_root!("#{common_cmd} script/secure_rails server webrick -d -P #{pid_dir}/#{app_mode}_https_server.pid", 'HTTPS_PORT' => config[:https_port] ) }
+      task(:launch_https_server_daemon){ system_at_root!("#{common_cmd} script/secure_rails server webrick -d -P #{pid_dir}/#{app_mode}_https_server.pid", 'HTTPS_PORT' => config[:https_port], "FONTANA_APP_MODE" => app_mode) }
 
       # desc "luanch server daemons"
       task :launch_server_daemons => [:launch_http_server_daemon, :launch_https_server_daemon]
