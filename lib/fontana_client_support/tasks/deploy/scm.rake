@@ -20,6 +20,9 @@ namespace :deploy do
 
     desc "fetch, checkout, build app_seed and migrate."
     fontana_task :update
+
+    desc "db:drop, db:seed, build app_seed and migrate."
+    fontana_task :update_db
   end
 
 end
