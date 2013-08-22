@@ -22,7 +22,7 @@ namespace :deploy do
     fontana_task :update, before: runtime_source
 
     desc "db:drop, db:seed, app_seed:build_from_runtime + migrate."
-    fontana_task :update_db
+    fontana_task :reset_db
   end
 
 end
