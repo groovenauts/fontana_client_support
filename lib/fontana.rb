@@ -32,7 +32,7 @@ module Fontana
     # これは fontanaの Fontana.app_mode と同じ動きをすることが期待されています。
     # https://github.com/tengine/fontana/blob/master/config/application.rb#L47
     def app_mode
-      (ENV["FONTANA_APP_MODE"] || "production").to_sym
+      (ENV["FONTANA_APP_MODE"] || "development").to_sym # production development test
     end
 
     def app_mode=(value)
