@@ -7,16 +7,26 @@ module Fontana
 
     module_function
 
-    def system_at_vendor_fontana!(cmd, env = {}, &block)
+    def system_at_vendor_fontana!(cmd, &block)
       FileUtils::Verbose.chdir(FontanaClientSupport.vendor_fontana) do
-        return system!(cmd, env, &block)
+        return system!(cmd, &block)
       end
     end
 
-    def system!(cmd, env = {})
-      unless env.empty?
-        cmd = build_env_string(env) << " " << cmd
-      end
+    def spawn_at_vendor_fontana(env, cmd)
+      options = { chdir: FontanaClientSupport.vendor_fontana }
+      env = env.each_with_object({}){|(k,v), d| d[k.to_s] = v.to_s }
+      puts "now spawning:\n  env: #{env.inspect}\n  cmd: #{cmd.inspect}\n  options: #{options.inspect}"
+      pid = spawn(env, cmd, options)
+      puts "spawning suceeded pid: #{pid.inspect}"
+      Process.detach(pid)
+      at_exit{
+        puts "Now killing #{pid}"
+        Process.kill("INT", pid)
+      }
+    end
+
+    def system!(cmd)
       puts "now executing: #{cmd}"
 
       buf = []
@@ -31,12 +41,6 @@ module Fontana
         $stderr.puts("\e[31mFAILURE: %s\n%s\e[0m" % [cmd, buf.join.strip])
         exit(1)
       end
-    end
-
-    def build_env_string(env)
-      env.each_with_object([]){|(key, value), d|
-        d << "#{key}=#{value.to_s.shellescape}"
-      }.join(" ")
     end
 
   end

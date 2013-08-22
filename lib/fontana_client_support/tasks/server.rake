@@ -4,10 +4,20 @@ require 'fontana_client_support'
 include Fontana::CommandUtils
 extend Fontana::RakeUtils
 
+
+
+
+
 namespace :server do
   task :wait_to_launch do
-    sleep( (ENV["FONTANA_WAIT_TO_LAUNCH"] || 5).to_i ) # 実際にポートをLINSTENするまで待ちたい
+    sleep( (ENV["FONTANA_WAIT_TO_LAUNCH"] || 20).to_i ) # 実際にポートをLINSTENするまで待ちたい
   end
+end
+
+def build_env_str(env)
+  env.each_with_object([]){|(k,v), d|
+    d << "#{k.to_s}=#{v.to_s}"
+  }.join(" ")
 end
 
 {
@@ -19,23 +29,37 @@ end
     pid_dir = File.join(FontanaClientSupport.root_dir, "tmp/pids")
 
     namespace :server do
-      common_cmd = "BUNDLE_GEMFILE=Gemfile-LibgssTest bundle exec"
+      http_env = {FONTANA_APP_MODE: app_mode, BUNDLE_GEMFILE: "Gemfile-LibgssTest" }
+      https_env = http_env.merge(HTTPS_PORT: config[:https_port])
 
-      # desc "luanch HTTP server"
-      task( :launch_http_server       ){ system_at_vendor_fontana!("#{common_cmd} rails server -p #{config[:http_port]}", "FONTANA_APP_MODE" => app_mode) }
+      http_env_str = build_env_str(http_env)
+      https_env_str = build_env_str(https_env)
 
-      # desc "luanch HTTP server daemon"
-      task(:launch_http_server_daemon ){ system_at_vendor_fontana!("#{common_cmd} rails server -p #{config[:http_port]} -d -P #{pid_dir}/#{app_mode}_http_server.pid", "FONTANA_APP_MODE" => app_mode) }
+      http_base_cmd = "bundle exec rails server -p #{config[:http_port]}"
+      http_fg_cmd = "#{http_env_str} #{http_base_cmd}"
+      http_bg_cmd = "#{http_env_str} #{http_base_cmd} -d -P #{pid_dir}/#{app_mode}_http_server.pid"
 
       # HTTPSのポートは script/secure_rails の内部で ENV['HTTPS_PORT'] を参照しています
-      # desc "luanch HTTPS server"
-      task(:launch_https_server       ){ system_at_vendor_fontana!("#{common_cmd} script/secure_rails server webrick", 'HTTPS_PORT' => config[:https_port], "FONTANA_APP_MODE" => app_mode ) }
+      https_base_cmd = "bundle exec script/secure_rails server webrick"
+      https_fg_cmd = "#{https_env_str} #{https_base_cmd}"
+      https_bg_cmd = "#{https_env_str} #{https_base_cmd} -d -P #{pid_dir}/#{app_mode}_https_server.pid"
 
-      # desc "luanch HTTPS server daemon"
-      task(:launch_https_server_daemon){ system_at_vendor_fontana!("#{common_cmd} script/secure_rails server webrick -d -P #{pid_dir}/#{app_mode}_https_server.pid", 'HTTPS_PORT' => config[:https_port], "FONTANA_APP_MODE" => app_mode) }
+      {
+        launch_http_server:         http_fg_cmd,
+        launch_http_server_daemon:  http_bg_cmd,
+        launch_https_server:        https_fg_cmd,
+        launch_https_server_daemon: https_bg_cmd,
+      }.each do |name, cmd|
+        task(name){ system_at_vendor_fontana!(cmd) }
+      end
 
-      # desc "luanch server daemons"
       task :launch_server_daemons => [:launch_http_server_daemon, :launch_https_server_daemon]
+
+      spawn_env = {FONTANA_APP_MODE: app_mode, BUNDLE_GEMFILE: "Gemfile-LibgssTest" }
+      task(:spawn_http_server){ spawn_at_vendor_fontana(http_env, http_base_cmd) }
+      task(:spawn_https_server){ spawn_at_vendor_fontana(https_env, https_base_cmd) }
+
+      task :spawn_servers => [:spawn_http_server, :spawn_https_server]
     end
 
     namespace :servers do
@@ -68,6 +92,7 @@ end
           msg = "\e[31mdaemons seems to be still alive! #{pids.inspect}\n"
           cmd = "ps " + pids.map{|pid| "-p `cat #{pid}`" }.join(" ")
           msg << `#{cmd}`
+          msg << "\n You can stop these daemons by using `rake test:servers:stop`"
           msg << "\e[0m"
           raise msg
         end
