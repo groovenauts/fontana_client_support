@@ -1,9 +1,16 @@
 require 'fontana'
+require 'fileutils'
 
 module Fontana
   module CommandUtils
 
     module_function
+
+    def system_at_root!(cmd, &block)
+      FileUtils::Verbose.chdir(FontanaClientSupport.root_dir) do
+        return system!(cmd, &block)
+      end
+    end
 
     def system!(cmd)
       puts "now executing: #{cmd}"
