@@ -1,18 +1,22 @@
 require 'fontana'
 require 'fileutils'
+require "shellwords"
 
 module Fontana
   module CommandUtils
 
     module_function
 
-    def system_at_root!(cmd, &block)
+    def system_at_root!(cmd, env = {}, &block)
       FileUtils::Verbose.chdir(FontanaClientSupport.root_dir) do
-        return system!(cmd, &block)
+        return system!(cmd, env, &block)
       end
     end
 
-    def system!(cmd)
+    def system!(cmd, env = {})
+      unless env.empty?
+        cmd = build_env_string(env) << " " << cmd
+      end
       puts "now executing: #{cmd}"
 
       buf = []
@@ -27,6 +31,12 @@ module Fontana
         $stderr.puts("\e[31mFAILURE: %s\n%s\e[0m" % [cmd, buf.join.strip])
         exit(1)
       end
+    end
+
+    def build_env_string(env)
+      env.each_with_object([]){|(key, value), d|
+        d << "#{key}=#{value.to_s.shellescape}"
+      }.join(" ")
     end
 
   end
