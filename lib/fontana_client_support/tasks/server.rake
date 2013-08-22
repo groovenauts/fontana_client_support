@@ -6,48 +6,48 @@ extend Fontana::RakeUtils
 
 %w[development test].each do |app_mode|
 
-namespace app_mode.to_sym do
-namespace :server do
+  namespace app_mode.to_sym do
+    namespace :server do
 
-  pid_dir = File.join(FontanaClientSupport.root_dir, "tmp/pids")
+      pid_dir = File.join(FontanaClientSupport.root_dir, "tmp/pids")
 
-  common_cmd = "BUNDLE_GEMFILE=Gemfile-LibgssTest bundle exec"
+      common_cmd = "BUNDLE_GEMFILE=Gemfile-LibgssTest bundle exec"
 
-  desc "luanch HTTP server"
-  task( :launch_http_server       ){ system_at_root!("#{common_cmd} rails server -p #{ENV['HTTP_PORT'] || 3000}") }
+      desc "luanch HTTP server"
+      task( :launch_http_server       ){ system_at_root!("#{common_cmd} rails server -p #{ENV['HTTP_PORT'] || 3000}") }
 
-  desc "luanch HTTP server daemon"
-  task(:launch_http_server_daemon ){ system_at_root!("#{common_cmd} rails server -p #{ENV['HTTP_PORT'] || 3000} -d -P #{pid_dir}/#{app_mode}_http_server.pid") }
+      desc "luanch HTTP server daemon"
+      task(:launch_http_server_daemon ){ system_at_root!("#{common_cmd} rails server -p #{ENV['HTTP_PORT'] || 3000} -d -P #{pid_dir}/#{app_mode}_http_server.pid") }
 
-  # HTTPSのポートは script/secure_rails の内部で ENV['HTTPS_PORT'] を参照しています
-  desc "luanch HTTPS server"
-  task(:launch_https_server       ){ system_at_root!("#{common_cmd} script/secure_rails server webrick") }
+      # HTTPSのポートは script/secure_rails の内部で ENV['HTTPS_PORT'] を参照しています
+      desc "luanch HTTPS server"
+      task(:launch_https_server       ){ system_at_root!("#{common_cmd} script/secure_rails server webrick") }
 
-  desc "luanch HTTPS server daemon"
-  task(:launch_https_server_daemon){ system_at_root!("#{common_cmd} script/secure_rails server webrick -d -P #{pid_dir}/#{app_mode}_https_server.pid") }
+      desc "luanch HTTPS server daemon"
+      task(:launch_https_server_daemon){ system_at_root!("#{common_cmd} script/secure_rails server webrick -d -P #{pid_dir}/#{app_mode}_https_server.pid") }
 
-  desc "luanch server"
-  task :launch_server => :launch_http_server
+      desc "luanch server"
+      task :launch_server => :launch_http_server
 
-  desc "luanch server daemons"
-  task :launch_server_daemons => [:launch_http_server_daemon, :launch_https_server_daemon]
+      desc "luanch server daemons"
+      task :launch_server_daemons => [:launch_http_server_daemon, :launch_https_server_daemon]
 
-  desc "shutdown server daemons"
-  task :shutdown_server_daemons do
-    Dir.glob(File.join(pid_dir, "#{app_mode}_*.pid")) do |pid_path|
-      pid = `cat #{pid_path}`.strip
-      system!("kill -INT #{pid}")
+      desc "shutdown server daemons"
+      task :shutdown_server_daemons do
+        Dir.glob(File.join(pid_dir, "#{app_mode}_*.pid")) do |pid_path|
+          pid = `cat #{pid_path}`.strip
+          system!("kill -INT #{pid}")
+        end
+      end
+
+      desc "check daemon alive"
+      task :check_daemon_alive do
+        pids = Dir.glob(File.join(pid_dir, "#{app_mode}_*.pid")).to_a
+        raise "daemons seems to be still alive! #{pids.inspect}" unless pids.empty?
+      end
+
     end
   end
-
-  desc "check daemon alive"
-  task :check_daemon_alive do
-    pids = Dir.glob(File.join(pid_dir, "#{app_mode}_*.pid")).to_a
-    raise "daemons seems to be still alive! #{pids.inspect}" unless pids.empty?
-  end
-
-end
-end
 
 end
 
