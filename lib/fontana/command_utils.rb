@@ -14,7 +14,7 @@ module Fontana
     end
 
     def spawn_at_vendor_fontana(env, cmd)
-      options = { chdir: FontanaClientSupport.vendor_fontana }
+      options = { chdir: FontanaClientSupport.vendor_fontana, out: "/dev/null" }
       env = env.each_with_object({}){|(k,v), d| d[k.to_s] = v.to_s }
       puts "now spawning:\n  env: #{env.inspect}\n  cmd: #{cmd.inspect}\n  options: #{options.inspect}"
       pid = spawn(env, cmd, options)
