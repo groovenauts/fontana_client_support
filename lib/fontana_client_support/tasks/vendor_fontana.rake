@@ -65,6 +65,7 @@ namespace :vendor do
 
     task_sequential :update, [
       :"vendor:fontana:fetch_and_checkout",
+      :"vendor:fontana:configs",
       :"vendor:fontana:bundle_install",
       :"vendor:fontana:db_drop",
       :"vendor:fontana:deploy_update",
@@ -86,7 +87,12 @@ namespace :vendor do
     desc "reset vendor/fontana"
     task_sequential :reset, [:"vendor:fontana:clear", :"vendor:fontana:setup"]
 
-    task :prepare => (Dir.exist?(FontanaClientSupport.vendor_fontana) ? :"vendor:fontana:update" : :"vendor:fontana:reset")
+    task :prepare do
+      name = Dir.exist?(FontanaClientSupport.vendor_fontana) ? "update" : "reset"
+      Rake::Task["vendor:fontana:#{name}"].delegate
+    end
+
+
   end
 
 end
