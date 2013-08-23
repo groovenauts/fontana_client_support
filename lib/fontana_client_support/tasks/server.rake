@@ -18,7 +18,7 @@ end
 }.each do |app_mode, config|
   namespace app_mode.to_sym do
 
-    pid_dir = File.join(FontanaClientSupport.root_dir, "tmp/pids")
+    pid_dir = File.join(FontanaClientSupport.vendor_fontana, "tmp/pids")
 
     namespace :server do
       http_env = {FONTANA_APP_MODE: app_mode, BUNDLE_GEMFILE: "Gemfile-LibgssTest" }
@@ -26,6 +26,13 @@ end
 
       http_env_str = build_env_str(http_env)
       https_env_str = build_env_str(https_env)
+
+      desc "update VersionSet entries' versions and copy collections"
+      task(:update_version_set_entries) do
+        if ENV["GSS_VERSION_SET_FIXTURE_FILEPATH"]
+          system_at_vendor_fontana!(http_env_str + " rake version_set:update_entry_versions")
+        end
+      end
 
       http_base_cmd = "bundle exec rails server -p #{config[:http_port]}"
       http_fg_cmd = "#{http_env_str} #{http_base_cmd}"
@@ -45,14 +52,21 @@ end
         task(name){ system_at_vendor_fontana!(cmd) }
       end
 
-      task :launch_server_daemons => [:launch_http_server_daemon, :launch_https_server_daemon]
+      task_sequential :launch_server_daemons, [
+        :"#{app_mode}:server:update_version_set_entries",
+        :"#{app_mode}:server:launch_http_server_daemon",
+        :"#{app_mode}:server:launch_https_server_daemon"
+      ]
 
       spawn_env = {FONTANA_APP_MODE: app_mode, BUNDLE_GEMFILE: "Gemfile-LibgssTest" }
-      task(:spawn_http_server){ spawn_at_vendor_fontana(http_env, http_base_cmd) }
-      task(:spawn_https_server){ spawn_at_vendor_fontana(https_env, https_base_cmd) }
+      task(:spawn_http_server){ spawn_at_vendor_fontana_with_sweeper(http_env, http_base_cmd, out: "/dev/null") }
+      task(:spawn_https_server){ spawn_at_vendor_fontana_with_sweeper(https_env, https_base_cmd, out: "/dev/null") }
 
-      task :spawn_servers => [:spawn_http_server, :spawn_https_server]
-
+      task_sequential :spawn_servers, [
+        :"#{app_mode}:server:update_version_set_entries",
+        :"#{app_mode}:server:spawn_http_server",
+        :"#{app_mode}:server:spawn_https_server"
+      ]
 
       {
         http: config[:http_port],
