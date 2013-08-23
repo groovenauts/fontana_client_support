@@ -29,5 +29,15 @@ module Fontana
       @env ||= (ENV["FONTANA_ENV"] || "DEVELOPMENT").to_sym
     end
 
+    # これは fontanaの Fontana.app_mode と同じ動きをすることが期待されています。
+    # https://github.com/tengine/fontana/blob/master/config/application.rb#L47
+    def app_mode
+      (ENV["FONTANA_APP_MODE"] || "development").to_sym # production development test
+    end
+
+    def app_mode=(value)
+      ENV["FONTANA_APP_MODE"] = value
+    end
+
   end
 end

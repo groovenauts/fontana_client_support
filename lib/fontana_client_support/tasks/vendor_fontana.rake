@@ -15,12 +15,13 @@ namespace :vendor do
       fileutils.rm_rf(d) if Dir.exist?(d)
     end
 
-    # 動的に決まるタスクを静的に扱えるようにタスクを定義します
-    task :deploy_reset do
-      Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:reset"].delegate
-    end
-    task :deploy_update do
-      Rake::Task["deploy:#{FontanaClientSupport.deploy_strategy}:update"].delegate
+    case FontanaClientSupport.deploy_strategy
+    when :scm then
+      task :deploy_reset  => :"deploy:scm:reset"
+      task :deploy_update => :"deploy:scm:update"
+    when :sync then
+      task :deploy_reset  => :"deploy:sync:reset"
+      task :deploy_update => :"deploy:sync:update"
     end
 
     task_sequential :setup, [
@@ -64,6 +65,7 @@ namespace :vendor do
 
     task_sequential :update, [
       :"vendor:fontana:fetch_and_checkout",
+      :"vendor:fontana:configs",
       :"vendor:fontana:bundle_install",
       :"vendor:fontana:db_drop",
       :"vendor:fontana:deploy_update",
@@ -89,6 +91,8 @@ namespace :vendor do
       name = Dir.exist?(FontanaClientSupport.vendor_fontana) ? "update" : "reset"
       Rake::Task["vendor:fontana:#{name}"].delegate
     end
+
+
   end
 
 end
