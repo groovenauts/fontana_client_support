@@ -23,8 +23,8 @@ module Fontana
       return pid
     end
 
-    def spawn_at_vendor_fontana_with_sweeper(env, cmd)
-      pid = spawn_at_vendor_fontana(env, cmd)
+    def spawn_at_vendor_fontana_with_sweeper(*args)
+      pid = spawn_at_vendor_fontana(*args)
       at_exit{
         puts "Now killing #{pid}"
         Process.kill("INT", pid)
