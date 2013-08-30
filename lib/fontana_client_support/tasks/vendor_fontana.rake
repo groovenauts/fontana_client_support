@@ -38,7 +38,11 @@ namespace :vendor do
         system!("git clone #{Fontana.repo_url} vendor/fontana")
       end
       fileutils.chdir(FontanaClientSupport.vendor_fontana) do
-        system!("git checkout #{Fontana.branch}")
+        if Fontana.version
+          system!("git checkout master && git reset --hard #{Fontana.version}")
+        else
+          system!("git checkout #{Fontana.branch}")
+        end
       end
     end
 
