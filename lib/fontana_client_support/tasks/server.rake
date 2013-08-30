@@ -27,7 +27,7 @@ end
       http_env_str = build_env_str(http_env)
       https_env_str = build_env_str(https_env)
 
-      desc "update VersionSet entries' versions and copy collections"
+      # desc "update VersionSet entries' versions and copy collections"
       task(:update_version_set_entries) do
         if ENV["GSS_VERSION_SET_FIXTURE_FILEPATH"]
           system_at_vendor_fontana!(http_env_str + " rake version_set:update_entry_versions")
@@ -90,13 +90,13 @@ end
         end
       end
 
-      desc "error on ports listened by some server"
+      # desc "error on ports listened by some server"
       task :error_on_ports_listened => [
         :error_on_http_listened,
         :error_on_https_listened,
       ]
 
-      desc "wait to listen ports"
+      # desc "wait to listen ports"
       task :wait_to_listen_ports => [
         :wait_to_listen_http,
         :wait_to_listen_https,
@@ -127,7 +127,7 @@ end
         end
       end
 
-      desc "check #{app_mode} daemon alive"
+      # desc "check #{app_mode} daemon alive"
       task :check_daemon_alive do
         pids = Dir.glob(File.join(pid_dir, "#{app_mode}_*.pid")).to_a
         unless pids.empty?
