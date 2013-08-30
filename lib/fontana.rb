@@ -39,5 +39,16 @@ module Fontana
       ENV["FONTANA_APP_MODE"] = value
     end
 
+    def version
+      unless @version
+        @version = ENV['FONTANA_VERSION' ]
+        unless @version
+          path = File.expand_path("FONTANA_VERSION", FontanaClientSupport.root_dir)
+          @version = File.read(path).strip if File.readable?(path)
+        end
+      end
+      @version
+    end
+
   end
 end
