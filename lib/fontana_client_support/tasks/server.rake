@@ -53,6 +53,7 @@ end
       end
 
       task_sequential :launch_server_daemons, [
+        :"#{app_mode}:db:seed",
         :"#{app_mode}:server:update_version_set_entries",
         :"#{app_mode}:server:launch_http_server_daemon",
         :"#{app_mode}:server:launch_https_server_daemon"

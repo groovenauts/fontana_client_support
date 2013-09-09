@@ -1,41 +1,30 @@
-puts "=" * 100
-
 require 'fontana_client_support'
 include Fontana::ServerRake
 
-options = { before: ->{ ENV['FONTANA_ENV'] = app_mode.to_s.upcase } }
 
-tasks_with_desc = %w[drop seed summary]
-tasks_without_desc = %w[create]
+tasks_without_desc = %w[drop seed summary create]
 mongoid_tasks = %w[create_indexes remove_indexes]
 
-block = Proc.new do |app_mode|
-  namespace_with_fontana :db, :"db" do
+[:development, :test].each do |app_mode|
 
-    tasks_with_desc.each do |task|
-      desc "#{task} Database for #{app_mode}"
-      fontana_task task.to_sym, options
+  options = { env: { FONTANA_APP_MODE: app_mode.to_s } }
+  namespace app_mode do
+    namespace_with_fontana :db, :"db" do
+      tasks_without_desc.each do |t|
+        fontana_task t.to_sym, options
+      end
     end
 
-    tasks_without_desc.each do |task|
-      fontana_task task.to_sym, options
-    end
-  end
-
-  namespace_with_fontana :db, :"db:mongoid" do
-    mongoid_tasks.each do |task|
-      fontana_task task.to_sym, options
+    namespace_with_fontana :db, :"db:mongoid" do
+      mongoid_tasks.each do |t|
+        fontana_task t.to_sym, options
+      end
     end
   end
-
 end
 
-
-namespace(:test) do
-  block.call(:test)
+namespace :db do
+  (tasks_without_desc + mongoid_tasks).each do |t|
+    task t.to_sym => :"development:db:#{t}"
+  end
 end
-
-block.call(:development)
-
-
-puts "*" * 100
