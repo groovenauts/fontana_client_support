@@ -27,4 +27,9 @@ namespace :db do
   (tasks_without_desc + mongoid_tasks).each do |t|
     task t.to_sym => :"development:db:#{t}"
   end
+
+  namespace :drop do
+    desc "drop databases for both development and test"
+    task :all => [:"test:db:drop", :"development:db:drop"]
+  end
 end
