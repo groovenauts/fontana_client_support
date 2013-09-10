@@ -10,6 +10,25 @@ namespace :vendor do
 
     fileutils = FileUtils::Verbose
 
+    def vendor_fontana_version
+      d = FontanaClientSupport.vendor_fontana
+      if Dir.exist?(d)
+        Dir.chdir(d) do
+          # log = `git log -1 --decorate --branches --tags` # これだと現在のコミットが先頭にならない
+          log = `git log -1 --decorate --oneline`
+          if t = log.split(/\s*,\s*/).detect{|s| s =~ /\Atag:\s*v?\d+\.\d+\.\d+/}
+            t.split(/\s*:\s*/, 2).last
+          else
+            nil
+          end
+        end
+      end
+    end
+
+    task :version do
+      puts vendor_fontana_version
+    end
+
     task :clear do
       d = FontanaClientSupport.vendor_fontana
       fileutils.rm_rf(d) if Dir.exist?(d)
@@ -92,8 +111,19 @@ namespace :vendor do
     task_sequential :reset, [:"vendor:fontana:clear", :"vendor:fontana:setup"]
 
     task :prepare do
-      name = Dir.exist?(FontanaClientSupport.vendor_fontana) ? "update" : "reset"
-      Rake::Task["vendor:fontana:#{name}"].delegate
+      if vfv = vendor_fontana_version
+        if vfv == Fontana.version
+          puts "\e[32m#{Fontana.version} is already used.\e[0m"
+        else
+          puts "\e[33m#{vfv} is used but FONTANA_VERSION is #{Fontana.version}\e[0m"
+          # name = Dir.exist?(FontanaClientSupport.vendor_fontana) ? "update" : "reset"
+          # Rake::Task["vendor:fontana:#{name}"].delegate
+          Rake::Task["vendor:fontana:reset"].delegate
+        end
+      else
+        puts "\e[33mversion not found in vendor/fontana\e[0m"
+        Rake::Task["vendor:fontana:reset"].delegate
+      end
     end
 
 
