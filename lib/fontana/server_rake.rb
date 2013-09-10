@@ -8,15 +8,15 @@ module Fontana
 
     module_function
 
-    def task_options
-      @task_options ||= {}
-    end
-
-    def call_fontana_task(name)
-      options = task_options[name]
+    def call_fontana_task(name, options)
+      # options = task_options[name]
       options[:before].call if options[:before]
 
-      cmd = "BUNDLE_GEMFILE=#{Fontana.gemfile} bundle exec rake #{name}"
+      cmd = ""
+      if (envs = options[:env]) && !envs.empty?
+        cmd << envs.map{|(k,v)| "#{k}=#{v}"}.join(" ") << ' '
+      end
+      cmd << "BUNDLE_GEMFILE=#{Fontana.gemfile} bundle exec rake #{name}"
       if Rake.application.options.trace
         cmd << " --trace -v"
       end
@@ -29,9 +29,8 @@ module Fontana
 
     def fontana_task(name, options = {})
       full_name = (@namespaces + [name]).join(':')
-      task_options[full_name] = options
       task name do
-        call_fontana_task(full_name)
+        call_fontana_task(full_name, options)
       end
     end
 
