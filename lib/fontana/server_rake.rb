@@ -8,13 +8,9 @@ module Fontana
 
     module_function
 
-    def task_options
-      @task_options ||= {}
-    end
-
     def call_fontana_task(name, options)
       # options = task_options[name]
-      # options[:before].call if options[:before]
+      options[:before].call if options[:before]
 
       cmd = ""
       if (envs = options[:env]) && !envs.empty?
@@ -33,7 +29,6 @@ module Fontana
 
     def fontana_task(name, options = {})
       full_name = (@namespaces + [name]).join(':')
-      task_options[full_name] = options
       task name do
         call_fontana_task(full_name, options)
       end
