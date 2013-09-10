@@ -1,6 +1,6 @@
 require 'fontana_client_support'
 include Fontana::ServerRake
-
+include Fontana::CommandUtils
 
 tasks_without_desc = %w[drop seed summary create]
 mongoid_tasks = %w[create_indexes remove_indexes]
@@ -29,7 +29,25 @@ namespace :db do
   end
 
   namespace :drop do
-    desc "drop databases for both development and test"
-    task :all => [:"test:db:drop", :"development:db:drop"]
+    if FontanaClientSupport.root_dir
+
+      basename = File.basename(FontanaClientSupport.root_dir)
+      db_names = `mongo --quiet --eval "db.adminCommand('listDatabases')['databases'].map(function(db){ return db.name }).filter(function(db){ return db.match(/#{basename}/)}).join(',')"`.strip.split(/,/)
+      desc "CAUTION! drop databases: #{db_names.join(',')}"
+      task :all do
+        db_names.each do |db_name|
+          system!(%Q!mongo --quiet --eval "db = db.getSiblingDB('#{db_name}'); printjson(db.dropDatabase())"!)
+        end
+      end
+
+    else
+
+      desc "CAUTION! drop databases for both development and test"
+      task :all => [:"test:db:drop", :"development:db:drop"]
+
+    end
   end
 end
+
+
+
