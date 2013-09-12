@@ -25,6 +25,17 @@ namespace :vendor do
       end
     end
 
+    def vendor_fontana_branch
+      `git status`.scan(/On branch\s*(.+)\s*$/).flatten.first
+    end
+
+    def raise_if_fontana_branch_empty
+      if Fontana.branch.nil? || Fontana.branch.empty?
+        # FONTANA_BRANCHがnilならmasterが設定されているはずです
+        raise "\e[31mInvalid FONTANA_BRANCH: #{ENV['FONTANA_BRANCH'].inspect}. Please set valid value or unset FONTANA_BRANCH.\e[0m"
+      end
+    end
+
     task :version do
       puts vendor_fontana_version
     end
@@ -51,16 +62,15 @@ namespace :vendor do
     ]
 
     task :clone do
+      raise_if_fontana_branch_empty
       raise "$FONTANA_REPO_URL is required" unless Fontana.repo_url
       fileutils.mkdir_p(FontanaClientSupport.vendor_dir)
       fileutils.chdir(FontanaClientSupport.root_dir) do
-        system!("git clone #{Fontana.repo_url} vendor/fontana")
+        system!("git clone #{Fontana.repo_url} vendor/fontana -b #{Fontana.branch}")
       end
       fileutils.chdir(FontanaClientSupport.vendor_fontana) do
-        if Fontana.version
+        unless Fontana.version.nil? || Fontana.version.empty?
           system!("git checkout master && git reset --hard #{Fontana.version}")
-        else
-          system!("git checkout #{Fontana.branch}")
         end
       end
     end
@@ -111,18 +121,47 @@ namespace :vendor do
     task_sequential :reset, [:"vendor:fontana:clear", :"vendor:fontana:setup"]
 
     task :prepare do
-      if vfv = vendor_fontana_version
-        if vfv == Fontana.version
-          puts "\e[32m#{Fontana.version} is already used.\e[0m"
-        else
-          puts "\e[33m#{vfv} is used but FONTANA_VERSION is #{Fontana.version}\e[0m"
-          # name = Dir.exist?(FontanaClientSupport.vendor_fontana) ? "update" : "reset"
-          # Rake::Task["vendor:fontana:#{name}"].delegate
-          Rake::Task["vendor:fontana:reset"].delegate
+      raise_if_fontana_branch_empty
+
+      vfb = vendor_fontana_branch
+      vfv = vendor_fontana_version
+
+      puts "vendor/fontana branch: #{vfb.inspect} version: #{vfv.inspect}"
+      puts "      required branch: #{Fontana.branch.inspect} version: #{Fontana.version.inspect}"
+
+      if !Dir.exist?(FontanaClientSupport.vendor_fontana)
+        # vendor/fontana が存在しない場合
+        puts "\e[34mvendor/fontana does not exist.\e[0m"
+        Rake::Task["vendor:fontana:reset"].delegate
+
+      elsif vfb != Fontana.branch
+        # vendor/fontanaのブランチが FONTANA_BRANCH と異なる場合
+        puts "\e[33m but FONTANA_BRANCH is #{Fontana.branch}\e[0m"
+        Rake::Task["vendor:fontana:reset"].delegate
+
+      elsif Fontana.version.nil? || Fontana.version.empty?
+        # FONTANA_BRANCHとvendor/fontanaのブランチが同じで、FONTANA_VERSIONが指定されていない場合
+        puts "\e[34mvendor/fontana's branch is #{vfb} as same as FONTANA_BRANCH. Now pulling origin #{vfb.inspect} \e[0m"
+        fileutils.chdir(FontanaClientSupport.vendor_fontana) do
+          system!("git pull origin #{Fontana.branch}; git status")
         end
-      else
+
+      elsif vfv.nil?
+        # FONTANA_BRANCHとvendor/fontanaのブランチが同じで、vendor/fontanaのバージョンが取得できない場合
         puts "\e[33mversion not found in vendor/fontana\e[0m"
         Rake::Task["vendor:fontana:reset"].delegate
+
+      elsif vfv == Fontana.version
+        # FONTANA_BRANCHとvendor/fontanaのブランチが同じで、FONTANA_VERSIONが指定されていて、vendor/fontanaのバージョンと同じものの場合
+        puts "\e[32m#{Fontana.version} is already used.\e[0m"
+
+      else
+        # FONTANA_BRANCHとvendor/fontanaのブランチが同じで、FONTANA_VERSIONが指定されていて、vendor/fontanaのバージョンと異なる場合
+        puts "\e[33m#{vfv} is used but FONTANA_VERSION is #{Fontana.version}\e[0m"
+        # name = Dir.exist?(FontanaClientSupport.vendor_fontana) ? "update" : "reset"
+        # Rake::Task["vendor:fontana:#{name}"].delegate
+        Rake::Task["vendor:fontana:reset"].delegate
+
       end
     end
 
