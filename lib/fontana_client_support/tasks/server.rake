@@ -155,4 +155,9 @@ namespace :servers do
 
   desc "restart development HTTP+HTTPS server daemons"
   task :restart => :"development:servers:restart"
+
+  namespace :stop do
+    desc "stop all HTTP+HTTPS server daemons"
+    task :all => [:"development:servers:stop", :"test:servers:stop"]
+  end
 end

@@ -29,7 +29,7 @@ namespace :vendor do
       puts vendor_fontana_version
     end
 
-    task :clear do
+    task :clear => :"servers:stop:all" do
       d = FontanaClientSupport.vendor_fontana
       fileutils.rm_rf(d) if Dir.exist?(d)
     end
