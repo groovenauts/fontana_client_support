@@ -17,17 +17,20 @@ module FontanaClientSupport
 
     def current_branch_name
       unless @current_branch_name
-        work = `git log --decorate -1 --branches`.scan(/^commit\s[0-9a-f]+\s\((.+)\)/).
-          flatten.first.split(/,/).map(&:strip).reject{|s| s =~ /HEAD\Z/}
-        r = work.select{|s| s =~ /origin\//}.first
-        r ||= work.first
-        @current_branch_name = r.sub(/\Aorigin\//, '')
+        @current_branch_name = `git status`.scan(/On branch\s*(.+)\s*$/).flatten.first
+        unless @current_branch_name
+          work = `git log --decorate -1`.scan(/^commit\s[0-9a-f]+\s\((.+)\)/).
+            flatten.first.split(/,/).map(&:strip).reject{|s| s =~ /HEAD\Z/}
+          r = work.select{|s| s =~ /origin\//}.first
+          r ||= work.first
+          @current_branch_name = r.sub(/\Aorigin\//, '')
+        end
       end
       @current_branch_name
     rescue => e
       puts "[#{e.class}] #{e.message}"
       puts "Dir.pwd: #{Dir.pwd}"
-      puts "git log --decorate -1\n" << `git log --decorate -1`
+      puts "git status\n" << `git status`
       raise e
     end
 
