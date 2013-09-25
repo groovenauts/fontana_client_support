@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'fontana_client_support'
 
 include Fontana::CommandUtils
@@ -26,10 +27,13 @@ end
         status:  "show status (PID) of application instances",
       }
 
+      cmd_base = cmd_env_str + " bundle exec script/delayed_job "
+
       commands.each do |cmd, description|
-        desc description
+
+        desc "@#{app_mode} #{description}"
         task cmd do
-          s = cmd_env_str + " bundle exec script/delayed_job #{cmd}"
+          s = "#{cmd_base} #{cmd}"
           options_str = ENV['OPTIONS']
           unless options_str.nil? || options_str.empty?
             s << " " << options_str
@@ -44,7 +48,8 @@ end
 
       desc "show help"
       task :help do
-        system_at_vendor_fontana!("delayed_job --help")
+        # script/delayed_job --help が exitstatus が 0 でないので明示的に無視します
+        system_at_vendor_fontana!("#{cmd_base} script/delayed_job --help; echo ''")
       end
 
     end
