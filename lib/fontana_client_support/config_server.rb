@@ -11,9 +11,10 @@ module FontanaClientSupport
     end
 
     def launch
+      $stdout.puts "pwd                  : #{Dir.pwd.inspect}"
       require 'webrick'
       root_dir = FontanaClientSupport.root_dir
-      document_root_source = @config[:document_root] || root_dir ? File.join(root_dir, "config_server") : "."
+      document_root_source = @config[:document_root] || (root_dir ? File.join(root_dir, "config_server") : ".")
       $stdout.puts "config_server options: #{@config.inspect}"
       $stdout.puts("root_dir             : #{root_dir.inspect}")
       $stdout.puts("document_root_source : #{document_root_source.inspect}")
@@ -91,6 +92,8 @@ module FontanaClientSupport
           end
           $stdout.reopen("/dev/null")
           $stderr.reopen("/dev/null")
+          # $stdout.reopen("stdout.log")
+          # $stderr.reopen("stderr.log")
           begin
             self.new(options).launch
           ensure
