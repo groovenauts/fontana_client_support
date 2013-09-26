@@ -22,8 +22,10 @@ namespace :vendor do
     end
 
     def vendor_fontana_branch
-      # http://qiita.com/sugyan/items/83e060e895fa8ef2038c
-      `git symbolic-ref --short HEAD`.strip
+      return nil unless Dir.exist?(FontanaClientSupport.vendor_fontana)
+      Dir.chdir(FontanaClientSupport.vendor_fontana) do
+        return FontanaClientSupport.git_current_branch_name
+      end
     end
 
     def raise_if_fontana_branch_empty
@@ -133,7 +135,7 @@ namespace :vendor do
 
       elsif vfb != Fontana.branch
         # vendor/fontanaのブランチが FONTANA_BRANCH と異なる場合
-        puts "\e[33m but FONTANA_BRANCH is #{Fontana.branch}\e[0m"
+        # puts "\e[33m but FONTANA_BRANCH is #{Fontana.branch}\e[0m"
         Rake::Task["vendor:fontana:reset"].delegate
 
       elsif Fontana.version.nil? || Fontana.version.empty?

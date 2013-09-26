@@ -8,12 +8,13 @@ namespace :deploy do
   namespace_with_fontana :scm, :"app:scm" do
 
     set_url_and_branch = ->{
-      ENV['URL'] ||= FontanaClientSupport.repo_url
-      ENV['BRANCH'] ||= FontanaClientSupport.current_branch_name
     }
 
     desc "deploy:scm:setup + clone (+ checkout branch) + deploy:scm:update."
-    fontana_task :reset, before: set_url_and_branch
+    fontana_task :reset, env: {
+      'URL' => FontanaClientSupport.repo_url,
+      'BRANCH' => FontanaClientSupport.current_branch_name
+    }
 
     desc "drop DB, initialize, clear runtime workspace."
     fontana_task :setup
