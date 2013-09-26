@@ -15,13 +15,34 @@ module FontanaClientSupport
       @vendor_fontana ||= File.join(vendor_dir, "fontana")
     end
 
-    def current_branch_name
-      @current_branch_name ||= `git symbolic-ref --short HEAD`.strip
+    def git_current_branch_name
+      # http://qiita.com/sugyan/items/83e060e895fa8ef2038c
+      result = `git symbolic-ref --short HEAD`.strip
+      return result unless result.nil? || result.empty?
+      result = `git status`.scan(/On branch\s*(.+)\s*$/).flatten.first
+      return result unless result.nil? || result.empty?
+      work = `git log --decorate -1`.scan(/^commit\s[0-9a-f]+\s\((.+)\)/).
+        flatten.first.split(/,/).map(&:strip).reject{|s| s =~ /HEAD\Z/}
+      r = work.select{|s| s =~ /origin\//}.first
+      r ||= work.first
+      result = r.sub(/\Aorigin\//, '')
     rescue => e
       puts "[#{e.class}] #{e.message}"
       puts "Dir.pwd: #{Dir.pwd}"
       puts "git status\n" << `git status`
       raise e
+    end
+
+    def current_branch_name
+      raise "missing root_dir" if root_dir.nil?
+      raise "root_dir does not exist: #{root_dir.inspect}" unless Dir.exist?(root_dir)
+      unless @current_branch_name
+        Dir.chdir(root_dir) do
+          @current_branch_name = git_current_branch_name
+        end
+      end
+      puts "@current_branch_name: #{@current_branch_name.inspect}"
+      return @current_branch_name
     end
 
     def repo_url
