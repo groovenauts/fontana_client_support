@@ -13,7 +13,6 @@ module Fontana
     attr_accessor :gemfile
 
     attr_accessor :repo_url
-    attr_accessor :branch
 
     def home
       @home ||= ENV['FONTANA_HOME'] || (Dir.exist?(FontanaClientSupport.vendor_fontana) or Fontana.repo_url) ? FontanaClientSupport.vendor_fontana : nil
@@ -39,16 +38,29 @@ module Fontana
       ENV["FONTANA_APP_MODE"] = value
     end
 
+    def branch
+      unless @branch
+        @branch = ENV['FONTANA_BRANCH' ]
+        load_fontana_version_file unless @branch
+      end
+      @branch
+    end
+
     def version
       unless @version
         @version = ENV['FONTANA_VERSION' ]
-        unless @version
-          path = File.expand_path("FONTANA_VERSION", FontanaClientSupport.root_dir)
-          @version = File.read(path).strip if File.readable?(path)
-        end
+        load_fontana_version_file unless @version
       end
       @version
     end
+
+    def load_fontana_version_file
+      path = File.expand_path("FONTANA_VERSION", FontanaClientSupport.root_dir)
+      line = File.read(path).strip
+      @version, @branch = line.split(/\@/, 2).map{|s| s.empty? ? nil : s }
+      @branch ||= "master"
+    end
+    private :load_fontana_version_file
 
   end
 end

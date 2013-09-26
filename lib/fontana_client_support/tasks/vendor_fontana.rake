@@ -14,19 +14,16 @@ namespace :vendor do
       d = FontanaClientSupport.vendor_fontana
       if Dir.exist?(d)
         Dir.chdir(d) do
-          # log = `git log -1 --decorate --branches --tags` # これだと現在のコミットが先頭にならない
-          log = `git log -1 --decorate --oneline`
-          if t = log.split(/\s*,\s*/).detect{|s| s =~ /\Atag:\s*v?\d+\.\d+\.\d+/}
-            t.split(/\s*:\s*/, 2).last
-          else
-            nil
-          end
+          # http://qiita.com/sugyan/items/83e060e895fa8ef2038c
+          s = `git describe --tags`
+          s.scan(/\A(v\d+\.\d+\.\d+)/).flatten.first
         end
       end
     end
 
     def vendor_fontana_branch
-      `git status`.scan(/On branch\s*(.+)\s*$/).flatten.first
+      # http://qiita.com/sugyan/items/83e060e895fa8ef2038c
+      `git symbolic-ref --short HEAD`.strip
     end
 
     def raise_if_fontana_branch_empty
