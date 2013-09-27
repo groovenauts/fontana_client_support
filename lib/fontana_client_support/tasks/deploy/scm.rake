@@ -7,9 +7,6 @@ namespace :deploy do
   # このタスク群は sync:* と対になっています。
   namespace_with_fontana :scm, :"app:scm" do
 
-    set_url_and_branch = ->{
-    }
-
     desc "deploy:scm:setup + clone (+ checkout branch) + deploy:scm:update."
     fontana_task :reset, env: {
       'URL' => FontanaClientSupport.repo_url,
@@ -18,6 +15,9 @@ namespace :deploy do
 
     desc "drop DB, initialize, clear runtime workspace."
     fontana_task :setup
+
+    desc "update files to scm"
+    fontana_task :update_files
 
     desc "fetch, checkout, build app_seed and migrate."
     fontana_task :update
