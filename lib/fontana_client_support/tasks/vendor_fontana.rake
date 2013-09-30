@@ -112,7 +112,7 @@ namespace :vendor do
       end
     end
 
-    task :db_drop do
+    task :db_drop => :"bundle:unset_env" do
       fileutils.chdir(FontanaClientSupport.vendor_fontana) do
         system!("BUNDLE_GEMFILE=#{Fontana.gemfile} bundle exec rake db:drop")
       end

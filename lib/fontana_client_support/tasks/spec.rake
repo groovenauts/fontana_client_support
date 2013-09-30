@@ -8,7 +8,6 @@ task_sequential :spec_with_server_daemons, [
   :"app_mode:test",
   :"test:server:error_on_ports_listened",
   :"vendor:fontana:prepare",
-  :"bundle:unset_env",
   :"test:server:spawn_servers",
   :"test:server:wait_to_listen_ports",
   :spec
