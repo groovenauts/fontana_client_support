@@ -29,7 +29,7 @@ module Fontana
 
     def fontana_task(name, options = {})
       full_name = (@namespaces + [name]).join(':')
-      task name do
+      task(name => :"bundle:unset_env") do
         call_fontana_task(full_name, options)
       end
     end

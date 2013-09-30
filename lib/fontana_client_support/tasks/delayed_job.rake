@@ -32,7 +32,7 @@ end
       commands.each do |cmd, description|
 
         desc "@#{app_mode} #{description}"
-        task cmd do
+        task(cmd => :"bundle:unset_env") do
           s = "#{cmd_base} #{cmd}"
           options_str = ENV['OPTIONS']
           unless options_str.nil? || options_str.empty?

@@ -28,7 +28,7 @@ end
       https_env_str = build_env_str(https_env)
 
       # desc "update VersionSet entries' versions and copy collections"
-      task(:update_version_set_entries) do
+      task(:update_version_set_entries => :"bundle:unset_env") do
         if ENV["GSS_VERSION_SET_FIXTURE_FILEPATH"]
           system_at_vendor_fontana!(http_env_str + " rake version_set:update_entry_versions")
         end
@@ -49,7 +49,7 @@ end
         launch_https_server:        https_fg_cmd,
         launch_https_server_daemon: https_bg_cmd,
       }.each do |name, cmd|
-        task(name){ system_at_vendor_fontana!(cmd) }
+        task(name => :"bundle:unset_env"){ system_at_vendor_fontana!(cmd) }
       end
 
       task_sequential :launch_server_daemons, [
@@ -60,8 +60,8 @@ end
       ]
 
       spawn_env = {FONTANA_APP_MODE: app_mode, BUNDLE_GEMFILE: "Gemfile-LibgssTest" }
-      task(:spawn_http_server){ spawn_at_vendor_fontana_with_sweeper(http_env, http_base_cmd, out: "/dev/null") }
-      task(:spawn_https_server){ spawn_at_vendor_fontana_with_sweeper(https_env, https_base_cmd, out: "/dev/null") }
+      task(:spawn_http_server  => :"bundle:unset_env"){ spawn_at_vendor_fontana_with_sweeper(http_env , http_base_cmd , out: "/dev/null") }
+      task(:spawn_https_server => :"bundle:unset_env"){ spawn_at_vendor_fontana_with_sweeper(https_env, https_base_cmd, out: "/dev/null") }
 
       task_sequential :spawn_servers, [
         :"#{app_mode}:server:update_version_set_entries",
