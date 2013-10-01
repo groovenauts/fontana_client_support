@@ -13,8 +13,14 @@ def build_env_str(env)
 end
 
 {
-  development: {http_port: 3000, https_port: 3001 },
-  test:        {http_port: 4000, https_port: 4001 },
+  development: {
+    http_port:  Fontana.development_http_server_port,
+    https_port: Fontana.development_https_server_port,
+  },
+  test:        {
+    http_port:  Fontana.test_http_server_port,
+    https_port: Fontana.test_https_server_port,
+  },
 }.each do |app_mode, config|
   namespace app_mode.to_sym do
 

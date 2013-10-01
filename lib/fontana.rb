@@ -62,5 +62,25 @@ module Fontana
     end
     private :load_fontana_version_file
 
+    def development_http_server_port
+      (ENV["FONTANA_DEVELOPMENT_HTTP_SERVER_PORT" ] || 3000).to_i
+    end
+
+    def development_https_server_port
+      (ENV["FONTANA_DEVELOPMENT_HTTPS_SERVER_PORT"] || 3001).to_i
+    end
+
+    def test_http_server_port
+      (ENV["FONTANA_TEST_HTTP_SERVER_PORT" ] || 4000).to_i
+    end
+
+    def test_https_server_port
+      (ENV["FONTANA_TEST_HTTPS_SERVER_PORT"] || 4001).to_i
+    end
+
+    def test_server_url(hostname = "localhost")
+      "http://#{hostname}:#{test_http_server_port}"
+    end
+
   end
 end
