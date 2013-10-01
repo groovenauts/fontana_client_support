@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+idx = ARGV.index("--")
+unless idx
+  raise "%s [port_env1] [port_env2]... -- <command>" % File.basename(__FILE__)
+end
+
+targets = ARGV[0, idx]
+command = ARGV[(idx + 1)..-1].join(" ")
+
+port_range = 10000..60000
+len = (port_range.max - port_range.min)
+
+targets.each do |target|
+  ENV[target] = (rand(len) + port_range.min).to_s
+end
+
+require File.expand_path("../../lib/fontana/command_utils", __FILE__)
+
+Fontana::CommandUtils.system!(command)
