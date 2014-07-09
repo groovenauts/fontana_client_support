@@ -36,7 +36,7 @@ end
       # desc "update VersionSet entries' versions and copy collections"
       task(:update_version_set_entries => :"bundle:unset_env") do
         if ENV["GSS_VERSION_SET_FIXTURE_FILEPATH"]
-          system_at_vendor_fontana!(http_env_str + " rake version_set:update_entry_versions")
+          system_at_vendor_fontana!(http_env_str + " rake version_set:setup_versions_and_mapping")
         end
       end
 
